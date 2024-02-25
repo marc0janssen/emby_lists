@@ -57,7 +57,7 @@ class ELBE():
                 self.verbose_logging = True if (
                     self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
                     else False
-                
+
                 # NODE
                 self.nodename = self.config['NODE']['NODE_NAME']
 
