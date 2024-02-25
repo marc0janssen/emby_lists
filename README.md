@@ -1,2 +1,2 @@
 # emby_lists
- Get the contents of EMby
+ Get the contents of Emby
