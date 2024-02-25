@@ -209,7 +209,7 @@ class ELBE():
                             message["From"] = sender_email
                             message['To'] = receiver_email
                             message['Subject'] = (
-                                f"SeriesList - {self.nodename}"
+                                f"Series Lijst - {self.nodename}"
                             )
 
                             # attachment = open(self.log_filePath, 'rb')
