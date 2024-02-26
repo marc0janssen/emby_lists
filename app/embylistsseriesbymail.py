@@ -227,6 +227,16 @@ class ELBE():
                                     with open(self.list_filePath, 'r') as file:
                                         body = file.read()
 
+                                    logging.info(
+                                        f"SeriesList - Sending serie list by"
+                                        f" {match.group(0)}"
+                                        )
+                                    self.writeLog(
+                                        False,
+                                        f"SeriesList - Sending serie list by"
+                                        f" {match.group(0)}\n"
+                                    )
+
                                 except FileNotFoundError:
                                     logging.error(
                                         f"Can't find file "
