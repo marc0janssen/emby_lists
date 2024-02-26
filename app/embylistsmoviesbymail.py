@@ -228,12 +228,12 @@ class ELBE():
                                         body = file.read()
 
                                     logging.info(
-                                        f"MoviesList - Sending movie list by"
+                                        f"MoviesList - Sending movie list to"
                                         f" {match.group(0)}"
                                         )
                                     self.writeLog(
                                         False,
-                                        f"MoviesList - Sending movie list by"
+                                        f"MoviesList - Sending movie list to"
                                         f" {match.group(0)}\n"
                                     )
 

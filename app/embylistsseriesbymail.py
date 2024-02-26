@@ -228,12 +228,12 @@ class ELBE():
                                         body = file.read()
 
                                     logging.info(
-                                        f"SeriesList - Sending serie list by"
+                                        f"SeriesList - Sending serie list to"
                                         f" {match.group(0)}"
                                         )
                                     self.writeLog(
                                         False,
-                                        f"SeriesList - Sending serie list by"
+                                        f"SeriesList - Sending serie list to"
                                         f" {match.group(0)}\n"
                                     )
 
