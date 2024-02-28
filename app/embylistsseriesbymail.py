@@ -295,7 +295,8 @@ class ELBE():
                                     self.userPushover.send_message(
                                         message=f"SeriesList - "
                                         f"Series list sent to "
-                                        f"{match.group(0)}\n"
+                                        f"{match.group(0)}\n",
+                                        sound=self.pushover_sound
                                         )
 
                             except (gaierror, ConnectionRefusedError):
