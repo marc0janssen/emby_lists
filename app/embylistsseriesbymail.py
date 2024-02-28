@@ -278,6 +278,7 @@ class ELBE():
                                     my_message
                                     )
                                 email_session.quit()
+
                                 if self.verbose_logging:
                                     logging.info(
                                         f"SeriesList - Mail Sent to "
@@ -289,6 +290,13 @@ class ELBE():
                                     f"SeriesList - Mail Sent to "
                                     f"{receiver_email}.\n"
                                 )
+
+                                self.message = \
+                                    self.userPushover.send_message(
+                                        message=f"SeriesList - "
+                                        f"Series list sent to "
+                                        f"{match.group(0)}\n"
+                                        )
 
                             except (gaierror, ConnectionRefusedError):
                                 logging.error(
