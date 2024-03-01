@@ -16,8 +16,8 @@ from datetime import datetime
 from email.header import decode_header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.mime.base import MIMEBase
-# from email import encoders
+from email.mime.base import MIMEBase
+from email import encoders
 from socket import gaierror
 from chump import Application
 
@@ -37,10 +37,13 @@ class ELBE():
         self.exampleconfigfile = "embylists.ini.example"
         self.log_file = "embylistsmoviesbymail.log"
         self.movieslist = "movieslist.txt"
+        self.movieslist_alphabetical = "movieslist_alphabetical.txt"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
         self.list_filePath = f"{config_dir}{self.movieslist}"
+        self.list_filePath_alphabetical = \
+            f"{config_dir}{self.movieslist_alphabetical}"
 
         try:
             with open(self.config_filePath, "r") as f:
@@ -212,15 +215,16 @@ class ELBE():
                                 f"Movie Lijst - {self.nodename}"
                             )
 
-                            # attachment = open(self.log_filePath, 'rb')
-                            # obj = MIMEBase('application', 'octet-stream')
-                            # obj.set_payload((attachment).read())
-                            # encoders.encode_base64(obj)
-                            # obj.add_header(
-                            #     'Content-Disposition',
-                            #     "attachment; filename= "+self.log_file
-                            # )
-                            # message.attach(obj)
+                            attachment = open(
+                                self.list_filePath_alphabetical, 'rb')
+                            obj = MIMEBase('application', 'octet-stream')
+                            obj.set_payload((attachment).read())
+                            encoders.encode_base64(obj)
+                            obj.add_header(
+                                 'Content-Disposition',
+                                 "attachment; filename= "+self.log_file
+                             )
+                            message.attach(obj)
 
                             if self.enabled:
                                 try:
