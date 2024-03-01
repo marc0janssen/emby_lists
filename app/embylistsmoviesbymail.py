@@ -222,14 +222,19 @@ class ELBE():
                             encoders.encode_base64(obj)
                             obj.add_header(
                                  'Content-Disposition',
-                                 "attachment; filename= "+self.log_file
+                                 f"attachment; filename= "
+                                 f"{self.list_filePath_alphabetical}"
                              )
                             message.attach(obj)
 
                             if self.enabled:
                                 try:
                                     with open(self.list_filePath, 'r') as file:
-                                        body = file.read()
+                                        body = (
+                                            "In de bijlage ook de "
+                                            "alfabetische lijst.\n\n"
+                                        )
+                                        body += file.read()
 
                                     logging.info(
                                         f"MoviesList - Sending movie list to"
