@@ -222,8 +222,8 @@ class ELBE():
                             encoders.encode_base64(obj)
                             obj.add_header(
                                  'Content-Disposition',
-                                 f"attachment; filename= "
-                                 f"{self.list_filePath_alphabetical}"
+                                 f"attachment; filename="
+                                 f"{self.movieslist_alphabetical}"
                              )
                             message.attach(obj)
 
