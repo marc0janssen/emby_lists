@@ -16,10 +16,12 @@ MAIL_SENDER = user@domain.tld
 [MOVIES]
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+ALLOWED_SENDERSDV = user4@domain4.tld,user5@domain5.tld,user6@domain6.tld
 
 [SERIES]
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+ALLOWED_SENDERSDV = user4@domain4.tld,user5@domain5.tld,user6@domain6.tld
 
 [PUSHOVER]
 USER_KEY = xxxxxxxxxxxxxxx

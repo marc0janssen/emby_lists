@@ -37,10 +37,12 @@ class ELBE():
         self.exampleconfigfile = "embylists.ini.example"
         self.log_file = "embylistsseriesbymail.log"
         self.serieslist = "serieslist.txt"
+        self.seriesdvlist = "seriesdvlist.txt"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
         self.list_filePath = f"{config_dir}{self.serieslist}"
+        self.listdv_filePath = f"{config_dir}{self.seriesdvlist}"
 
         try:
             with open(self.config_filePath, "r") as f:
@@ -73,6 +75,8 @@ class ELBE():
                 self.keyword = self.config['SERIES']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['SERIES']['ALLOWED_SENDERS'].split(","))
+                self.allowed_sendersdv = list(
+                    self.config['SERIES']['ALLOWED_SENDERSDV'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -188,7 +192,13 @@ class ELBE():
                             False, f"SeriesList - Found matching subject from "
                             f"{match.group(0)}\n")
 
-                        if match.group(0) in self.allowed_senders:
+                        if match.group(0) in self.allowed_senders or \
+                                match.group(0) in self.allowed_sendersdv:
+
+                            if match.group(0) in self.allowed_senders:
+                                local_list_filePath = self.list_filePath
+                            else:
+                                local_list_filePath = self.listdv_filePath
 
                             if not self.enabled:
                                 if self.verbose_logging:
@@ -224,7 +234,8 @@ class ELBE():
 
                             if self.enabled:
                                 try:
-                                    with open(self.list_filePath, 'r') as file:
+                                    with open(
+                                            local_list_filePath, 'r') as file:
                                         body = file.read()
 
                                     logging.info(
@@ -240,12 +251,12 @@ class ELBE():
                                 except FileNotFoundError:
                                     logging.error(
                                         f"Can't find file "
-                                        f"{self.list_filePath}."
+                                        f"{local_list_filePath}."
                                     )
                                 except IOError:
                                     logging.error(
                                         f"Can't read file "
-                                        f"{self.list_filePath}."
+                                        f"{local_list_filePath}."
                                     )
 
                             else:

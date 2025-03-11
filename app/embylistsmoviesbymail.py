@@ -37,13 +37,18 @@ class ELBE():
         self.exampleconfigfile = "embylists.ini.example"
         self.log_file = "embylistsmoviesbymail.log"
         self.movieslist = "movieslist.txt"
+        self.moviesdvlist = "moviesdvlist.txt"
         self.movieslist_alphabetical = "movieslist_alphabetical.txt"
+        self.moviesdvlist_alphabetical = "moviesdvlist_alphabetical.txt"
 
         self.config_filePath = f"{config_dir}{self.config_file}"
         self.log_filePath = f"{log_dir}{self.log_file}"
         self.list_filePath = f"{config_dir}{self.movieslist}"
         self.list_filePath_alphabetical = \
             f"{config_dir}{self.movieslist_alphabetical}"
+        self.listdv_filePath = f"{config_dir}{self.moviesdvlist}"
+        self.listdv_filePath_alphabetical = \
+            f"{config_dir}{self.moviesdvlist_alphabetical}"
 
         try:
             with open(self.config_filePath, "r") as f:
@@ -76,6 +81,8 @@ class ELBE():
                 self.keyword = self.config['MOVIES']['KEYWORD']
                 self.allowed_senders = list(
                     self.config['MOVIES']['ALLOWED_SENDERS'].split(","))
+                self.allowed_sendersdv = list(
+                    self.config['MOVIES']['ALLOWED_SENDERSDV'].split(","))
 
                 # PUSHOVER
                 self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
@@ -191,7 +198,22 @@ class ELBE():
                             False, f"MoviesList - Found matching subject from "
                             f"{match.group(0)}\n")
 
-                        if match.group(0) in self.allowed_senders:
+                        if match.group(0) in self.allowed_senders \
+                                or match.group(0) in self.allowed_sendersdv:
+
+                            if match.group(0) in self.allowed_senders:
+                                local_list_filePath_alphabetical = \
+                                    self.list_filePath_alphabetical
+                                local_movieslist_alphabetical = \
+                                    self.movieslist_alphabetical
+                                local_list_filePath = \
+                                    self.list_filePath
+                            else:
+                                local_list_filePath_alphabetical = \
+                                    self.listdv_filePath_alphabetical
+                                local_movieslist_alphabetical = \
+                                    self.moviesdvlist_alphabetical
+                                local_list_filePath = self.listdv_filePath
 
                             if not self.enabled:
                                 if self.verbose_logging:
@@ -216,20 +238,21 @@ class ELBE():
                             )
 
                             attachment = open(
-                                self.list_filePath_alphabetical, 'rb')
+                                local_list_filePath_alphabetical, 'rb')
                             obj = MIMEBase('application', 'octet-stream')
                             obj.set_payload((attachment).read())
                             encoders.encode_base64(obj)
                             obj.add_header(
                                  'Content-Disposition',
                                  f"attachment; filename="
-                                 f"{self.movieslist_alphabetical}"
+                                 f"{local_movieslist_alphabetical}"
                              )
                             message.attach(obj)
 
                             if self.enabled:
                                 try:
-                                    with open(self.list_filePath, 'r') as file:
+                                    with open(
+                                            local_list_filePath, 'r') as file:
                                         body = (
                                             "In de bijlage ook de "
                                             "alfabetische lijst.\n\n"
@@ -249,12 +272,12 @@ class ELBE():
                                 except FileNotFoundError:
                                     logging.error(
                                         f"Can't find file "
-                                        f"{self.list_filePath}."
+                                        f"{local_list_filePath}."
                                     )
                                 except IOError:
                                     logging.error(
                                         f"Can't read file "
-                                        f"{self.list_filePath}."
+                                        f"{local_list_filePath}."
                                     )
 
                             else:
