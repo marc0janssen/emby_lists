@@ -31,7 +31,7 @@ class ELBE():
 
         config_dir = "/config/"
         app_dir = "/app/"
-        log_dir = "/logging/lists/"
+        log_dir = "/var/log/"
 
         self.config_file = "embylists.ini"
         self.exampleconfigfile = "embylists.ini.example"
