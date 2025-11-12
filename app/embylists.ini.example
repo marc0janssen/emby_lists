@@ -1,29 +1,64 @@
+
+; Example configuration for the emby_lists scripts
+; Copy this file to /config/embylists.ini (or set EMBYLISTS_CONFIG_DIR)
+; and update values for your environment. Do NOT commit secrets.
+
 [GENERAL]
+; ENABLED: ON/OFF - when OFF the service responds with a "service disabled" message
 ENABLED = ON
+; DRY_RUN: ON/OFF - when ON no mails are sent and messages are not deleted
 DRY_RUN = ON
+; VERBOSE_LOGGING: ON/OFF - enable extra log output for troubleshooting
 VERBOSE_LOGGING = ON
 
 [NODE]
+; Friendly node name included in subject/body of messages
 NODE_NAME = NODE1
 
 [MAIL]
-MAIL_PORT = 587
+; The IMAP server used to read incoming command emails
 MAIL_SERVER = imap.server.tld
+; Port used for SMTP when sending replies (587 for STARTTLS is common)
+MAIL_PORT = 587
+; If your IMAP server requires a different port (for example 993 for IMAP4_SSL),
+; set MAIL_IMAP_PORT. The scripts will try to use IMAP4_SSL by default.
+MAIL_IMAP_PORT = 993
+; Credentials used for both reading (IMAP) and sending (SMTP)
 MAIL_LOGIN = user@domain.tld
 MAIL_PASSWORD = pa55w0rd
+; The "From" address used when the script sends replies
 MAIL_SENDER = user@domain.tld
+; Use TLS for SMTP: ON/OFF
+MAIL_USE_TLS = ON
 
 [MOVIES]
+; KEYWORD: subject text (case-insensitive) that triggers a movies list reply
 KEYWORD = keyword
+; Comma-separated list of allowed sender email addresses for regular lists
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
+; Comma-separated list of allowed sender email addresses for DV (alternate) lists
 ALLOWED_SENDERSDV = user4@domain4.tld,user5@domain5.tld,user6@domain6.tld
 
 [SERIES]
+; Same settings as MOVIES, but used by the series script
 KEYWORD = keyword
 ALLOWED_SENDERS = user1@domain1.tld,user2@domain2.tld,user3@domain3.tld
 ALLOWED_SENDERSDV = user4@domain4.tld,user5@domain5.tld,user6@domain6.tld
 
 [PUSHOVER]
+; Optional: Pushover credentials to receive notifications when actions happen.
+; Leave blank to disable push notifications.
 USER_KEY = xxxxxxxxxxxxxxx
 TOKEN_API = xxxxxxxxxxxxxxx
+; valid values are the Pushover sound names, default is "pushover"
 SOUND = pushover
+
+; NOTES:
+; - The scripts expect the lists (movieslist.txt, movieslist_alphabetical.txt,
+;   moviesdvlist.txt, etc.) to live in the same config directory.
+; - Keep this file secure; prefer mounting it as a Docker secret or using
+;   environment variables for credentials when running in containers.
+; - Boolean fields accept ON/OFF in the current scripts. Avoid other values.
+; - If you change key names (for example to add separate SMTP host), update
+;   the scripts accordingly or set environment variables EMBYLISTS_* to
+;   override the paths.

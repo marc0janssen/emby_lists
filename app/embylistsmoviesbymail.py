@@ -11,6 +11,8 @@ import sys
 import configparser
 import shutil
 import smtplib
+import os
+from pathlib import Path
 
 from datetime import datetime
 from email.header import decode_header
@@ -28,10 +30,10 @@ class ELBE():
         logging.basicConfig(
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             level=logging.INFO)
-
-        config_dir = "/config/"
-        app_dir = "/app/"
-        log_dir = "/var/log/"
+        # allow directory overrides via environment variables
+        config_dir = os.getenv("EMBYLISTS_CONFIG_DIR", "/config/")
+        app_dir = os.getenv("EMBYLISTS_APP_DIR", "/app/")
+        log_dir = os.getenv("EMBYLISTS_LOG_DIR", "/var/log/")
 
         self.config_file = "embylists.ini"
         self.exampleconfigfile = "embylists.ini.example"
@@ -41,89 +43,116 @@ class ELBE():
         self.movieslist_alphabetical = "movieslist_alphabetical.txt"
         self.moviesdvlist_alphabetical = "moviesdvlist_alphabetical.txt"
 
-        self.config_filePath = f"{config_dir}{self.config_file}"
-        self.log_filePath = f"{log_dir}{self.log_file}"
-        self.list_filePath = f"{config_dir}{self.movieslist}"
-        self.list_filePath_alphabetical = \
-            f"{config_dir}{self.movieslist_alphabetical}"
-        self.listdv_filePath = f"{config_dir}{self.moviesdvlist}"
-        self.listdv_filePath_alphabetical = \
-            f"{config_dir}{self.moviesdvlist_alphabetical}"
+        # use pathlib for paths
+        self.config_filePath = Path(config_dir) / self.config_file
+        self.log_filePath = Path(log_dir) / self.log_file
+        self.list_filePath = Path(config_dir) / self.movieslist
+        self.list_filePath_alphabetical = (
+            Path(config_dir) / self.movieslist_alphabetical
+        )
+        self.listdv_filePath = Path(config_dir) / self.moviesdvlist
+        self.listdv_filePath_alphabetical = (
+            Path(config_dir) / self.moviesdvlist_alphabetical
+        )
 
+        # ensure config exists
         try:
-            with open(self.config_filePath, "r") as f:
-                f.close()
+            if not self.config_filePath.exists():
+                logging.error(
+                    f"Can't open file {self.config_filePath}, "
+                    "creating example INI file."
+                )
+                src = Path(app_dir) / self.exampleconfigfile
+                dst = Path(config_dir) / self.exampleconfigfile
+                # ensure destination directory exists
+                dst.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(str(src), str(dst))
+                sys.exit(1)
+
             try:
                 self.config = configparser.ConfigParser()
                 self.config.read(self.config_filePath)
 
                 # GENERAL
-                self.enabled = True if (
-                    self.config['GENERAL']['ENABLED'] == "ON") else False
-                self.dry_run = True if (
-                    self.config['GENERAL']['DRY_RUN'] == "ON") else False
-                self.verbose_logging = True if (
-                    self.config['GENERAL']['VERBOSE_LOGGING'] == "ON") \
-                    else False
+                self.enabled = self.config.getboolean(
+                    'GENERAL', 'ENABLED', fallback=False
+                )
+                self.dry_run = self.config.getboolean(
+                    'GENERAL', 'DRY_RUN', fallback=False
+                )
+                self.verbose_logging = self.config.getboolean(
+                    'GENERAL', 'VERBOSE_LOGGING', fallback=False
+                )
 
                 # NODE
-                self.nodename = self.config['NODE']['NODE_NAME']
+                self.nodename = self.config.get(
+                    'NODE', 'NODE_NAME', fallback=''
+                )
 
                 # MAIL
-                self.mail_port = int(
-                    self.config['MAIL']['MAIL_PORT'])
-                self.mail_server = self.config['MAIL']['MAIL_SERVER']
-                self.mail_login = self.config['MAIL']['MAIL_LOGIN']
-                self.mail_password = self.config['MAIL']['MAIL_PASSWORD']
-                self.mail_sender = self.config['MAIL']['MAIL_SENDER']
+                self.mail_port = self.config.getint(
+                    'MAIL', 'MAIL_PORT', fallback=0
+                )
+                self.mail_server = self.config.get(
+                    'MAIL', 'MAIL_SERVER', fallback=''
+                )
+                self.mail_login = self.config.get(
+                    'MAIL', 'MAIL_LOGIN', fallback=''
+                )
+                self.mail_password = self.config.get(
+                    'MAIL', 'MAIL_PASSWORD', fallback=''
+                )
+                self.mail_sender = self.config.get(
+                    'MAIL', 'MAIL_SENDER', fallback=''
+                )
 
                 # MOVIES
-                self.keyword = self.config['MOVIES']['KEYWORD']
-                self.allowed_senders = list(
-                    self.config['MOVIES']['ALLOWED_SENDERS'].split(","))
-                self.allowed_sendersdv = list(
-                    self.config['MOVIES']['ALLOWED_SENDERSDV'].split(","))
+                self.keyword = self.config.get(
+                    'MOVIES', 'KEYWORD', fallback=''
+                )
+                allowed = self.config.get(
+                    'MOVIES', 'ALLOWED_SENDERS', fallback=''
+                )
+                allowed_dv = self.config.get(
+                    'MOVIES', 'ALLOWED_SENDERSDV', fallback=''
+                )
+                self.allowed_senders = [
+                    s.strip() for s in allowed.split(',') if s.strip()
+                ]
+                self.allowed_sendersdv = [
+                    s.strip() for s in allowed_dv.split(',') if s.strip()
+                ]
 
                 # PUSHOVER
-                self.pushover_user_key = self.config['PUSHOVER']['USER_KEY']
-                self.pushover_token_api = self.config['PUSHOVER']['TOKEN_API']
-                self.pushover_sound = self.config['PUSHOVER']['SOUND']
-
-            except KeyError as e:
-                logging.error(
-                    f"Seems a key(s) {e} is missing from INI file. "
-                    f"Please check for mistakes. Exiting."
+                self.pushover_user_key = self.config.get(
+                    'PUSHOVER', 'USER_KEY', fallback=''
+                )
+                self.pushover_token_api = self.config.get(
+                    'PUSHOVER', 'TOKEN_API', fallback=''
+                )
+                self.pushover_sound = self.config.get(
+                    'PUSHOVER', 'SOUND', fallback='pushover'
                 )
 
-                sys.exit()
-
-            except ValueError as e:
+            except (KeyError, ValueError) as e:
                 logging.error(
-                    f"Seems a invalid value in INI file. "
-                    f"Please check for mistakes. Exiting. "
-                    f"MSG: {e}"
+                    f"Invalid INI contents or type error: {e}. "
+                    "Exiting."
                 )
+                sys.exit(1)
 
-                sys.exit()
-
-        except IOError or FileNotFoundError:
-            logging.error(
-                f"Can't open file {self.config_filePath}"
-                f", creating example INI file."
-            )
-
-            shutil.copyfile(f'{app_dir}{self.exampleconfigfile}',
-                            f'{config_dir}{self.exampleconfigfile}')
-            sys.exit()
+        except (IOError, FileNotFoundError) as e:
+            logging.error(f"I/O error while checking config: {e}")
+            sys.exit(1)
 
     def writeLog(self, init, msg):
         try:
-            if init:
-                logfile = open(self.log_filePath, "w")
-            else:
-                logfile = open(self.log_filePath, "a")
-            logfile.write(f"{datetime.now()} - {msg}")
-            logfile.close()
+            # ensure log directory exists
+            logpath = Path(self.log_filePath)
+            logpath.parent.mkdir(parents=True, exist_ok=True)
+            mode = "w" if init else "a"
+            with open(logpath, mode, encoding='utf-8') as logfile:
+                logfile.write(f"{datetime.now()} - {msg}")
         except IOError:
             logging.error(
                 f"Can't write file {self.log_filePath}."
@@ -237,10 +266,11 @@ class ELBE():
                                 f"Movie Lijst - {self.nodename}"
                             )
 
-                            attachment = open(
-                                local_list_filePath_alphabetical, 'rb')
                             obj = MIMEBase('application', 'octet-stream')
-                            obj.set_payload((attachment).read())
+                            with open(
+                                local_list_filePath_alphabetical, 'rb'
+                            ) as attachment:
+                                obj.set_payload(attachment.read())
                             encoders.encode_base64(obj)
                             obj.add_header(
                                  'Content-Disposition',
